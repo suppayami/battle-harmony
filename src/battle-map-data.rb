@@ -19,7 +19,7 @@ class Game_BattleMap < Game_Map
   def setup_battle
     setup_actors
     setup_enemies
-    setup_start_locations
+    setup_map_data
   end
   
   #--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ class Game_BattleMap < Game_Map
   #--------------------------------------------------------------------------
   # setup_start_locations
   #--------------------------------------------------------------------------
-  def setup_start_locations
+  def setup_map_data
     @start_locations ||= []
     @start_locations.clear
     #---

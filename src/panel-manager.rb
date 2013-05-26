@@ -52,17 +52,7 @@ module PanelManager
   def self.passable?(x, y, d)
     panel = get_panel(x, y, d)
     #---
-    return false unless map_bound?(x, y, d)
-    return true
-  end
-  
-  #--------------------------------------------------------------------------
-  # map_bound?
-  #--------------------------------------------------------------------------
-  def self.map_bound?(x, y, d)
-    panel = get_panel(x, y, d)
-    return false if panel.any? { |c| c < 0 }
-    return false if panel[0] >= $game_map.width || panel[1] >= $game_map.height
+    return false unless $game_map.valid?(panel[0], panel[1])
     return true
   end
   
