@@ -1,7 +1,7 @@
 module Harmony
-	# Build filename.
+	# Build filename
 	FINAL   = "build/final.rb"
-	# Source files.
+	# Source files
 	TARGETS = [
 		"src/config.rb",
 		"src/data-parser.rb",
