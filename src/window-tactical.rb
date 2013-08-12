@@ -1,5 +1,5 @@
 #==============================================================================
-# Å° Window_PartyBattlers
+# °ˆ Window_PartyBattlers
 #==============================================================================
 
 class Window_PartyBattlers < Window_Selectable
@@ -236,7 +236,7 @@ class Window_PartyBattlers < Window_Selectable
 end # Window_PartyBattlers
 
 #==============================================================================
-# Å° Window_TacticalCommand
+# °ˆ Window_TacticalCommand
 #==============================================================================
 
 class Window_TacticalCommand < Window_Command
@@ -288,3 +288,179 @@ class Window_TacticalCommand < Window_Command
   end
   
 end # Window_TacticalCommand
+
+#==============================================================================
+# °ˆ Window_ActorCommandTBS
+#==============================================================================
+
+class Window_ActorCommandTBS < Window_ActorCommand
+  
+  #--------------------------------------------------------------------------
+  # make_command_list
+  #--------------------------------------------------------------------------
+  def make_command_list
+    return unless @actor
+    add_move_command
+#~     add_attack_command
+#~     add_skill_commands
+#~     add_item_command
+#~     add_guard_command
+    add_wait_command
+  end
+  
+  #--------------------------------------------------------------------------
+  # add_move_command
+  #--------------------------------------------------------------------------
+  def add_move_command
+    add_command(Vocab.tbs_move, :move, movable?)
+  end
+  
+  #--------------------------------------------------------------------------
+  # add_wait_command
+  #--------------------------------------------------------------------------
+  def add_wait_command
+    add_command(Vocab.tbs_wait, :wait)
+  end
+  
+  #--------------------------------------------------------------------------
+  # movable?
+  #--------------------------------------------------------------------------
+  def movable?
+    !@actor.moved? && @actor.movable?
+  end
+  
+end # Window_ActorCommandTBS
+
+#==============================================================================
+# °ˆ Window_StatusTBS
+#==============================================================================
+
+class Window_StatusTBS < Window_Selectable
+  
+  #--------------------------------------------------------------------------
+  # initialize
+  #--------------------------------------------------------------------------
+  def initialize
+    super(0, 0, window_width, window_height)
+    refresh
+    self.openness = 0
+    @subject = nil
+    @target  = nil
+  end
+  
+  #--------------------------------------------------------------------------
+  # window_width
+  #--------------------------------------------------------------------------
+  def window_width
+    Graphics.width - 128
+  end
+  
+  #--------------------------------------------------------------------------
+  # window_height
+  #--------------------------------------------------------------------------
+  def window_height
+    fitting_height(visible_line_number)
+  end
+  
+  #--------------------------------------------------------------------------
+  # item_height
+  #--------------------------------------------------------------------------
+  def item_height
+    height - standard_padding * 2
+  end
+  
+  #--------------------------------------------------------------------------
+  # visible_line_number
+  #--------------------------------------------------------------------------
+  def visible_line_number
+    4
+  end
+  
+  #--------------------------------------------------------------------------
+  # col_max
+  #--------------------------------------------------------------------------
+  def col_max
+    2
+  end
+  
+  #--------------------------------------------------------------------------
+  # item_max
+  #--------------------------------------------------------------------------
+  def item_max
+    2
+  end
+  
+  #--------------------------------------------------------------------------
+  # draw_item
+  #--------------------------------------------------------------------------
+  def draw_item(index)
+    return if index.nil?
+    clear_item(index)
+    rect = item_rect(index)
+    battler = index == 0 ? @subject : @target
+    return if battler.nil?
+    draw_actor_face(battler, rect.x+2, rect.y+2, battler.alive?)
+    draw_actor_name(battler, rect.x+96, rect.y, rect.width-8)
+    draw_actor_icons(battler, rect.x+96, line_height, rect.width-100)
+    draw_actor_hp(battler, rect.x+96, line_height*2, rect.width-100)
+    cost_width = (rect.width - 100) / 2
+    draw_actor_mp(battler, rect.x+96, line_height*3, cost_width)
+    draw_actor_tp(battler, rect.x+96+cost_width, line_height*3, cost_width)
+  end
+  
+  #--------------------------------------------------------------------------
+  # draw_face
+  #--------------------------------------------------------------------------
+  def draw_actor_face(actor, x, y, enabled = true)
+    if actor.actor?
+      draw_face(actor.face_name, actor.face_index, x, y, enabled)
+    else
+      draw_face_enemy(actor, x, y, enabled)
+    end
+  end
+  
+  #--------------------------------------------------------------------------
+  # draw_face
+  #--------------------------------------------------------------------------
+  def draw_face(face_name, face_index, dx, dy, enabled = true)
+    bitmap = Cache.face(face_name)
+    fx = [(96 - item_rect(0).width + 1) / 2, 0].max
+    fy = face_index / 4 * 96 + 2
+    fw = [item_rect(0).width - 4, 92].min
+    rect = Rect.new(fx, fy, fw, 92)
+    rect = Rect.new(face_index % 4 * 96 + fx, fy, fw, 92)
+    contents.blt(dx, dy, bitmap, rect, enabled ? 255 : translucent_alpha)
+    bitmap.dispose
+  end
+  
+  #--------------------------------------------------------------------------
+  # draw_face
+  #--------------------------------------------------------------------------
+  def draw_face_enemy(actor, dx, dy, enabled = true)
+    bitmap = Cache.battler(actor.battler_name, actor.battler_hue)
+    fx = (bitmap.width - 92).abs / 2
+    rect = Rect.new(fx, 0, 92, 92)
+    dy = [dy, 92 - bitmap.height].max
+    contents.blt(dx, dy, bitmap, rect, enabled ? 255 : translucent_alpha)
+    bitmap.dispose
+  end
+  
+  #--------------------------------------------------------------------------
+  # subject=
+  #--------------------------------------------------------------------------
+  def subject=(battler)
+    return if @subject == battler
+    @subject = battler
+    draw_item(0)
+  end
+  
+  #--------------------------------------------------------------------------
+  # target=
+  #--------------------------------------------------------------------------
+  def target=(battler)
+    return if @target == battler
+    @target = battler
+    draw_item(1)
+  end
+  
+end # Window_StatusTBS

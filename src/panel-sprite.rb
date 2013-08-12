@@ -1,7 +1,7 @@
 # Use for movement, cast range, ... panels on battle field
 
 #==============================================================================
-# Å° Cache
+# °ˆ Cache
 #==============================================================================
 
 module Cache
@@ -52,7 +52,7 @@ module Cache
 end # Cache
 
 #==============================================================================
-# Å° Sprite_Panel
+# °ˆ Sprite_Panel
 #==============================================================================
 
 class Sprite_Panel < Sprite
@@ -74,8 +74,8 @@ class Sprite_Panel < Sprite
     super(viewport)
     self.visible = false
     #---
-    @map_x = 0
-    @map_y = 0
+    @map_x = @real_x = 0
+    @map_y = @real_y = 0
     #---
     @symbol = nil
     #---
@@ -127,14 +127,14 @@ class Sprite_Panel < Sprite
   # screen_x
   #--------------------------------------------------------------------------
   def screen_x
-    $game_map.adjust_x(@map_x) * 32 + 16
+    $game_map.adjust_x(@real_x) * 32 + 16
   end
 
   #--------------------------------------------------------------------------
   # screen_y
   #--------------------------------------------------------------------------
   def screen_y
-    $game_map.adjust_y(@map_y) * 32 + 32
+    $game_map.adjust_y(@real_y) * 32 + 32
   end
   
   #--------------------------------------------------------------------------
@@ -166,9 +166,25 @@ class Sprite_Panel < Sprite
   end
   
   #--------------------------------------------------------------------------
+  # distance_per_frame
+  #--------------------------------------------------------------------------
+  def distance_per_frame
+    0.25
+  end
+  
+  #--------------------------------------------------------------------------
   # moveto
   #--------------------------------------------------------------------------
   def moveto(x, y)
+    @map_x = @real_x = x
+    @map_y = @real_y = y
+    update
+  end
+  
+  #--------------------------------------------------------------------------
+  # moveto
+  #--------------------------------------------------------------------------
+  def moveto_smooth(x, y)
     @map_x = x
     @map_y = y
     update
@@ -203,6 +219,7 @@ class Sprite_Panel < Sprite
     update_center
     update_input
     update_handling
+    update_move
   end
   
   #--------------------------------------------------------------------------
@@ -227,7 +244,7 @@ class Sprite_Panel < Sprite
   def update_center
     return unless self.visible
     return unless @symbol == :cursor
-    $game_map.set_display_pos(@map_x - center_x, @map_y - center_y)
+    $game_map.set_display_pos(@real_x - center_x, @real_y - center_y)
   end
   
   #--------------------------------------------------------------------------
@@ -250,6 +267,25 @@ class Sprite_Panel < Sprite
     return unless @active
     return process_ok     if ok_enabled?     && Input.trigger?(:C)
     return process_cancel if cancel_enabled? && Input.trigger?(:B)
+  end
+  
+  #--------------------------------------------------------------------------
+  # update_move
+  #--------------------------------------------------------------------------
+  def update_move
+    return unless @symbol == :cursor
+    @real_x = [@real_x - distance_per_frame, @map_x].max if @real_x > @map_x
+    @real_x = [@real_x + distance_per_frame, @map_x].min if @real_x < @map_x
+    @real_y = [@real_y - distance_per_frame, @map_y].max if @real_y > @map_y
+    @real_y = [@real_y + distance_per_frame, @map_y].min if @real_y < @map_y
+  end
+  
+  #--------------------------------------------------------------------------
+  # is_moving?
+  #--------------------------------------------------------------------------
+  def is_moving?
+    return false unless @symbol == :cursor
+    @real_x != @map_x || @real_y != @map_y
   end
   
   #--------------------------------------------------------------------------

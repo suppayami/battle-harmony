@@ -1,5 +1,5 @@
 #==============================================================================
-# ¡ ANode
+# ¡ö ANode
 #==============================================================================
 
 class ANode
@@ -27,7 +27,7 @@ class ANode
 end # ANode
 
 #==============================================================================
-# ¡ PanelManager
+# ¡ö PanelManager
 #==============================================================================
 
 module PanelManager
@@ -37,7 +37,7 @@ module PanelManager
   #--------------------------------------------------------------------------
   @aopen = []
   @aclose = []
-  DIRECTION = [4,8,6,2]
+  DIRECTION = [2, 4, 6, 8]
     
   #--------------------------------------------------------------------------
   # self.distance
@@ -59,21 +59,22 @@ module PanelManager
   #--------------------------------------------------------------------------
   # self.findpath
   #--------------------------------------------------------------------------
-  def self.findpath(character, p1, p2)
+  def self.findpath(battler, p1, p2)
     @aopen.clear
     @aclose.clear
     #---
     p1.g = 0
-    p1.h = distance(p2, p1)
+    p1.h = distance(p1, p2)
     p1.f = p1.h
     #---
     @aopen.push(p1)
     #---
     while @aopen.size > 0
       top = @aopen.shift
+      @aclose.push(top) if !@aclose.any? { |x| x.points == top.points }
       #---
       if top.points == p2.points
-        p2.parent = @aclose[@aclose.size - 1]
+        p2.parent = @aclose.pop
         return true
       end
       #---
@@ -82,9 +83,9 @@ module PanelManager
         topConnect = (@aopen + @aclose).select { |i| i.points == next_point }[0]
         topConnect = ANode.new(next_point[0], next_point[1]) if topConnect.nil?
         #---
-        if !@aclose.include?(topConnect) && 
-          check_passable?(top.points[0], top.points[1], i)
-          if !@aopen.include?(topConnect)
+        if !@aclose.any? { |x| x.points == topConnect.points } && 
+          check_passable?(battler, top.points[0], top.points[1], i)
+          if !@aopen.any? { |x| x.points == topConnect.points }
             topConnect.g = top.g + cost(top, topConnect)
             topConnect.h = distance(p2, topConnect)
             topConnect.f = topConnect.g + topConnect.h
@@ -102,11 +103,60 @@ module PanelManager
       }
       #---
       @aopen.sort! { |a,b| a.f <=> b.f }
-      #---
-      @aclose.push(top)
     end
     #---
     return false
+  end
+  
+  #--------------------------------------------------------------------------
+  # self.move_path
+  #--------------------------------------------------------------------------
+  def self.move_path(final_node)
+    path = []
+    node = final_node
+    nodes = []
+    #---
+    while node.parent
+      node = node.parent
+      nodes.push(node.points)
+    end
+    nodes.shift
+    #---
+    target_x = final_node.points[0]
+    target_y = final_node.points[1]
+    #---
+    start_x = nodes.reverse[0][0]
+    start_y = nodes.reverse[0][1]
+    #---
+    while nodes.size > 0
+      points = nodes.shift
+      parent_x = points[0]
+      parent_y = points[1]
+      if    target_x < parent_x; code = 2
+      elsif target_x > parent_x; code = 3
+      else; code = target_y < parent_y ? 4 : 1
+      end
+      path.push(RPG::MoveCommand.new(code))
+      target_x = parent_x
+      target_y = parent_y
+      break if target_x == start_x && target_y == start_y
+    end
+    return path.reverse + [RPG::MoveCommand.new(0)]
+  end
+  
+  #--------------------------------------------------------------------------
+  # self.print_path
+  # Use for debug
+  #--------------------------------------------------------------------------
+  def self.print_path(node)
+    return unless HARMONY::ENGINE::DEBUG_ASTAR
+    nodes = [node.points]
+    while node.parent
+      node = node.parent
+      nodes.push(node.points)
+    end
+    nodes.shift
+    nodes.reverse.each {|a| print a; print "  "}
   end
   
 end # PanelManager

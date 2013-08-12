@@ -1,7 +1,7 @@
 # Add things for Sprite_Character
 
 #==============================================================================
-# Å° Game_Enemy
+# °ˆ Game_Enemy
 #==============================================================================
 
 class Game_Enemy < Game_Battler
@@ -25,7 +25,7 @@ class Game_Enemy < Game_Battler
 end # Game_Enemy
 
 #==============================================================================
-# Å° Sprite_Character
+# °ˆ Sprite_Character
 #==============================================================================
 
 class Sprite_Character < Sprite_Base
@@ -38,7 +38,7 @@ class Sprite_Character < Sprite_Base
 end # Sprite_Character
 
 #==============================================================================
-# Å° Game_Character
+# °ˆ Game_Character
 #==============================================================================
 
 class Game_Character < Game_CharacterBase
@@ -47,16 +47,24 @@ class Game_Character < Game_CharacterBase
   # * Public Instance Variables
   #--------------------------------------------------------------------------
   attr_accessor :battler
+  
+end # Game_Character
 
+#==============================================================================
+# °ˆ Game_CharacterBattler
+#==============================================================================
+
+class Game_CharacterBattler < Game_Character
+  
   #--------------------------------------------------------------------------
-  # new method: refresh
+  # refresh
   #--------------------------------------------------------------------------
   def refresh
     @battler ? refresh_battler : false
   end
   
   #--------------------------------------------------------------------------
-  # new method: refresh_battler
+  # refresh_battler
   #--------------------------------------------------------------------------
   def refresh_battler
     @character_name = @battler.character_name
@@ -65,18 +73,90 @@ class Game_Character < Game_CharacterBase
   end
   
   #--------------------------------------------------------------------------
-  # new method: collide_with_battler?
+  # collide_with_battler?
   #--------------------------------------------------------------------------
   def collide_with_battler?(x, y)
-    $game_party.in_battle && $game_map.battler_xy?(x, y)
+    $game_party.in_battle && $game_map.battler_xy?(x, y) &&
+      opposite_unit?($game_map.battler_xy(x, y))
   end
   
   #--------------------------------------------------------------------------
-  # alias method: collide_with_characters?
+  # collide_with_characters?
   #--------------------------------------------------------------------------
-  alias beh_collide_with_characters? collide_with_characters?
   def collide_with_characters?(x, y)
-    beh_collide_with_characters?(x, y) || collide_with_battler?(x, y)
+    super(x, y) || collide_with_battler?(x, y)
+  end
+  
+  #--------------------------------------------------------------------------
+  # opposite_unit?
+  #--------------------------------------------------------------------------
+  def opposite_unit?(battler)
+    character = battler.character
+    return false unless character
+    (self.battler.actor? && character.battler.enemy?) ||
+      (self.battler.enemy? && character.battler.actor?)
+  end
+  
+  #--------------------------------------------------------------------------
+  # force_path
+  #--------------------------------------------------------------------------
+  def force_path(target_x, target_y)
+    start  = ANode.new(@x, @y)
+    target = ANode.new(target_x, target_y)
+    #---
+    PanelManager.findpath(self.battler, start, target)
+    PanelManager.print_path(target) # Debug pathfinding.
+    #---
+    path = PanelManager.move_path(target)
+    move_route = RPG::MoveRoute.new
+    move_route.list = path
+    move_route.repeat = false
+    force_move_route(move_route)
+  end
+  
+  #--------------------------------------------------------------------------
+  # is_moving?
+  #--------------------------------------------------------------------------
+  def is_moving?
+    (@move_route && @move_route.list.size > 0) || 
+      (@x != @real_x || @y != @real_y)
+  end
+  
+  #--------------------------------------------------------------------------
+  # center_x
+  #--------------------------------------------------------------------------
+  def center_x
+    (Graphics.width / 32 - 1) / 2.0
+  end
+
+  #--------------------------------------------------------------------------
+  # center_y
+  #--------------------------------------------------------------------------
+  def center_y
+    (Graphics.height / 32 - 1) / 2.0
+  end
+  
+  #--------------------------------------------------------------------------
+  # camera_follow
+  #--------------------------------------------------------------------------
+  def camera_follow(flag = true)
+    @camera_follow = flag
+  end
+  
+  #--------------------------------------------------------------------------
+  # update
+  #--------------------------------------------------------------------------
+  def update
+    super
+    update_camera
+  end
+  
+  #--------------------------------------------------------------------------
+  # update
+  #--------------------------------------------------------------------------
+  def update_camera
+    return unless @camera_follow
+    $game_map.set_display_pos(@real_x - center_x, @real_y - center_y)
   end
   
 end # Game_Character

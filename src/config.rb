@@ -8,7 +8,7 @@ module HARMONY
       :cursor         => [255, 255, 32 , 192],
       :other          => [255, 255, 255, 128],
     } # End.
-    PANEL_OUTLINE = true
+    PANEL_OUTLINE = false
   end # VISUAL
   
   module ENGINE
@@ -22,6 +22,9 @@ module HARMONY
     
     PARTY_START_REGION = 30
     DEFAULT_BATTLE_MEMBERS = 4
+    BATTLE_START_CAMERA = true
+    
+    DEBUG_ASTAR = false
   end # ENGINE
 end # HARMONY
 
@@ -40,6 +43,16 @@ module Vocab
   def self.tbs_placed
     # Use to note which actor has been placed
     "Placed"
+  end
+  
+  def self.tbs_move
+    # Actor command Move
+    "Move"
+  end
+  
+  def self.tbs_wait
+    # Actor command Wait
+    "Wait"
   end
   
 end # Vocab

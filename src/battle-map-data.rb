@@ -1,7 +1,7 @@
 # Use for setup battle map data
 
 #==============================================================================
-# ¡ Game_BattleMap
+# ¡ö Game_BattleMap
 #==============================================================================
 
 class Game_BattleMap < Game_Map
@@ -42,10 +42,12 @@ class Game_BattleMap < Game_Map
   #--------------------------------------------------------------------------
   def add_actor(actor, position)
     if battler_xy?(position[0], position[1])
-      remove_actor(battler_xy(position[0], position[1]))
+      if actor != battler_xy(position[0], position[1])
+        remove_actor(battler_xy(position[0], position[1]))
+      end
     end
     return move_actor(actor, position) if @actor_party.include?(actor)
-    character = Game_Character.new
+    character = Game_CharacterBattler.new
     character.moveto(position[0], position[1])
     #---
     actor.character = character
@@ -73,6 +75,18 @@ class Game_BattleMap < Game_Map
   end
   
   #--------------------------------------------------------------------------
+  # empty_position
+  #--------------------------------------------------------------------------
+  def empty_position
+    return [0, 0] if @start_locations.size == 0
+    @start_locations.each { |location|
+      next if battler_xy?(location[0], location[1])
+      return location
+    }
+    return @start_locations[0]
+  end
+  
+  #--------------------------------------------------------------------------
   # setup_enemies
   #--------------------------------------------------------------------------
   def setup_enemies
@@ -80,7 +94,7 @@ class Game_BattleMap < Game_Map
     @enemy_troop.clear
     #---
     $game_temp.tbs_troop.each_with_index { |data, index|
-      character = Game_Character.new
+      character = Game_CharacterBattler.new
       character.moveto(data[1], data[2])
       #---
       enemy = Game_Enemy.new(index, data[0])
