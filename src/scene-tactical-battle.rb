@@ -1,5 +1,5 @@
 #==============================================================================
-# ¡ö Scene_BattleTactics
+# â–  Scene_BattleTactics
 #==============================================================================
 
 class Scene_BattleTactics < Scene_Base
@@ -104,6 +104,7 @@ class Scene_BattleTactics < Scene_Base
     wx = @members_window.width
     @actor_command_window.x = wx
     @actor_command_window.set_handler(:move  , method(:command_move))
+    @actor_command_window.set_handler(:attack, method(:command_attack))
     @actor_command_window.set_handler(:wait  , method(:command_wait))
     @actor_command_window.set_handler(:cancel, method(:command_actor_cancel))
   end
@@ -147,6 +148,19 @@ class Scene_BattleTactics < Scene_Base
   def command_move
     @spriteset.activate_cursor
     @spriteset.start_move(@subject)
+  end
+  
+  #--------------------------------------------------------------------------
+  # command_attack
+  #--------------------------------------------------------------------------
+  def command_attack
+    atk_id = @subject.attack_skill_id
+    atk_skill = $data_skills[atk_id]
+    #---
+    @spriteset.activate_cursor
+    @spriteset.start_item(@subject, atk_skill)
+    #---
+    @subject.input.set_attack
   end
   
   #--------------------------------------------------------------------------
@@ -228,10 +242,25 @@ class Scene_BattleTactics < Scene_Base
   end
   
   #--------------------------------------------------------------------------
+  # wait_for_animation
+  #--------------------------------------------------------------------------
+  def wait_for_animation
+    update_for_wait
+    update_for_wait while @spriteset.animation?
+  end
+  
+  #--------------------------------------------------------------------------
   # camera_moving?
   #--------------------------------------------------------------------------
   def camera_moving?
     @spriteset.cursor_moving? || @subject && @subject.is_moving?
+  end
+  
+  #--------------------------------------------------------------------------
+  # refresh_status
+  #--------------------------------------------------------------------------
+  def refresh_status
+    @status_window.refresh
   end
   
   #--------------------------------------------------------------------------
@@ -363,10 +392,24 @@ class Scene_BattleTactics < Scene_Base
       @spriteset.refresh_actors
       @spriteset.hide_cursor
       @tactical_command_window.refresh
-      @members_window.activate.refresh
-      @members_window.select_next
+      check_max_actor
     else
       @spriteset.activate_cursor
+    end
+  end
+  
+  #--------------------------------------------------------------------------
+  # check_max_actor
+  #--------------------------------------------------------------------------
+  def check_max_actor
+    if $game_map.max_actor?
+      @tactical_command_window.select_fight
+      @tactical_command_window.activate
+      @members_window.refresh
+      @members_window.unselect
+    else
+      @members_window.activate.refresh
+      @members_window.select_next
     end
   end
   
@@ -377,6 +420,8 @@ class Scene_BattleTactics < Scene_Base
     case @actor_command_window.current_symbol
     when :move
       move_actor
+    else
+      item_actor
     end
   end
   
@@ -391,6 +436,24 @@ class Scene_BattleTactics < Scene_Base
       wait_for_camera
       @subject.camera_follow(false)
       #---
+      @spriteset.clear_panels
+      @actor_command_window.activate.refresh
+    else
+      @spriteset.activate_cursor
+    end
+  end
+  
+  #--------------------------------------------------------------------------
+  # item_actor
+  #--------------------------------------------------------------------------
+  def item_actor
+    position = @spriteset.cursor_position
+    if PanelManager.selection.include?(position)
+      # Need fix
+      @subject.input.target_index = $game_map.battler_xy(position[0], position[1]).index
+      execute_action
+      # End Need fix
+      @subject.end_action
       @spriteset.clear_panels
       @actor_command_window.activate.refresh
     else
@@ -414,6 +477,68 @@ class Scene_BattleTactics < Scene_Base
     @spriteset.show_cursor
     @spriteset.move_cursor(@subject.x, @subject.y)
     @actor_command_window.activate
+  end
+  
+  #--------------------------------------------------------------------------
+  # execute_action
+  #--------------------------------------------------------------------------
+  def execute_action
+    item = @subject.current_action.item
+    @subject.use_item(item)
+    refresh_status
+    targets = @subject.current_action.make_targets.compact
+    show_animation(targets, item.animation_id)
+    targets.each {|target| item.repeats.times { invoke_item(target, item) } }
+  end
+  
+  #--------------------------------------------------------------------------
+  # invoke_item
+  #--------------------------------------------------------------------------
+  def invoke_item(target, item)
+    apply_item_effects(target, item)
+    @subject.last_target_index = target.index
+  end
+  
+  #--------------------------------------------------------------------------
+  # apply_item_effects
+  #--------------------------------------------------------------------------
+  def apply_item_effects(target, item)
+    target.item_apply(@subject, item)
+    refresh_status
+  end
+  
+  #--------------------------------------------------------------------------
+  # show_animation
+  #--------------------------------------------------------------------------
+  def show_animation(targets, animation_id)
+    if animation_id < 0
+      show_attack_animation(targets)
+    else
+      show_normal_animation(targets, animation_id)
+    end
+    wait_for_animation
+  end
+  
+  #--------------------------------------------------------------------------
+  # show_attack_animation
+  #--------------------------------------------------------------------------
+  def show_attack_animation(targets)
+    show_normal_animation(targets, @subject.atk_animation_id1, false)
+    wait_for_animation
+    show_normal_animation(targets, @subject.atk_animation_id2, true)
+  end
+  
+  #--------------------------------------------------------------------------
+  # show_normal_animation
+  #--------------------------------------------------------------------------
+  def show_normal_animation(targets, animation_id, mirror = false)
+    animation = $data_animations[animation_id]
+    if animation
+      targets.each do |target|
+        target.animation_id = animation_id
+        target.animation_mirror = mirror
+      end
+    end
   end
   
 end # Scene_BattleTactics

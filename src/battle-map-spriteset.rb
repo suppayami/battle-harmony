@@ -1,5 +1,5 @@
 #==============================================================================
-# ¡ö Spriteset_BattleMap
+# â–  Spriteset_BattleMap
 #==============================================================================
 
 class Spriteset_BattleMap < Spriteset_Map
@@ -102,6 +102,19 @@ class Spriteset_BattleMap < Spriteset_Map
   #--------------------------------------------------------------------------
   def start_move(battler)
     PanelManager.move_selection(battler, false)
+    PanelManager.selection.each { |xy|
+      sprite = Sprite_Panel.new(@viewport1)
+      sprite.show(:move)
+      sprite.moveto(xy[0], xy[1])
+      @panel_sprites.push(sprite)
+    }
+  end
+  
+  #--------------------------------------------------------------------------
+  # start_item
+  #--------------------------------------------------------------------------
+  def start_item(battler, item)
+    PanelManager.item_selection(battler, item)
     PanelManager.selection.each { |xy|
       sprite = Sprite_Panel.new(@viewport1)
       sprite.show(:move)

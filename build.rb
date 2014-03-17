@@ -14,6 +14,7 @@ module Harmony
     "src/battle-map-data.rb",
     "src/battle-map-spriteset.rb",
     "src/battle-tbs-manager.rb",
+    "src/damage-popup.rb",
     "src/window-tactical.rb",
     "src/scene-tactical-battle.rb",
     "src/call-tbs.rb",

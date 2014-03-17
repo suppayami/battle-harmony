@@ -1,7 +1,7 @@
 # Panel Manager, use to find targetable grids.
 
 #==============================================================================
-# ¡ö PanelManager
+# â–  PanelManager
 #==============================================================================
 
 module PanelManager
@@ -102,9 +102,9 @@ module PanelManager
   end
   
   #--------------------------------------------------------------------------
-  # skill_selection
+  # item_selection
   #--------------------------------------------------------------------------
-  def self.skill_selection(battler, item)
+  def self.item_selection(battler, item)
     base = [battler.x, battler.y]
     return @selection if check_last(battler, item, base)
     @last_battler = battler
@@ -113,12 +113,16 @@ module PanelManager
     #---
     case item.class.name
     when "RPG::Skill"
-      range = battler.skill_range(item)
+      if item.id == battler.attack_skill_id
+        range = battler.attack_range
+      else
+        range = battler.skill_range(item)
+      end
     when "RPG::Item"
       range = battler.item_range(item)
     end
     clear
-    @max = battler.move_range
+    @max = range
     setup_selection(base, false)
     #---
     return @selection

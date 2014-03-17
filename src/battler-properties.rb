@@ -1,5 +1,5 @@
 #==============================================================================
-# ¡ö Game_Battler
+# â–  Game_Battler
 #==============================================================================
 
 class Game_Battler < Game_BattlerBase
@@ -41,8 +41,8 @@ class Game_Battler < Game_BattlerBase
   # new method: actor_attack_range
   #--------------------------------------------------------------------------
   def actor_attack_range
-    range_actor   = self.actor.move_range
-    range_class   = self.class.move_range
+    range_actor   = self.actor.attack_range
+    range_class   = self.class.attack_range
     range_weapon  = self.weapons.collect{|w|w.attack_range}.max
     range_default = HARMONY::ENGINE::DEFAULT_PROPERTIES[:attack_range]
     if range_weapon
@@ -88,6 +88,13 @@ class Game_Battler < Game_BattlerBase
   end
   
   #--------------------------------------------------------------------------
+  # new method: end_action
+  #--------------------------------------------------------------------------
+  def end_action
+    @acted = true
+  end
+  
+  #--------------------------------------------------------------------------
   # new method: return_position
   #--------------------------------------------------------------------------
   def return_position
@@ -130,6 +137,23 @@ class Game_Battler < Game_BattlerBase
   #--------------------------------------------------------------------------
   def is_moving?
     @character.is_moving?
+  end
+  
+  #--------------------------------------------------------------------------
+  # opposite_unit?
+  #--------------------------------------------------------------------------
+  def opposite_unit?(battler)
+    (self.actor? && battler.enemy?) || (self.enemy? && battler.actor?)
+  end
+  
+  #--------------------------------------------------------------------------
+  # new method: usable_on?
+  #--------------------------------------------------------------------------
+  def usable_on?(user, item)
+    flag = item.for_opponent? && opposite_unit?(user)
+    flag = flag || (item.for_friend? && !opposite_unit?(user))
+    flag = flag || (item.for_user? && user == self)
+    flag
   end
   
   #--------------------------------------------------------------------------

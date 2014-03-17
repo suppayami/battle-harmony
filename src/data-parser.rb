@@ -1,7 +1,7 @@
 # Use for parsing database and events by notetag and comment-tag
 
 #==============================================================================
-# ¡ö Regular Expression
+# â–  Regular Expression
 #==============================================================================
 
 module REGEXP
@@ -13,7 +13,7 @@ module REGEXP
 end
 
 #==============================================================================
-# ¡ö DataManager
+# â–  DataManager
 #==============================================================================
 
 module DataManager
@@ -44,7 +44,7 @@ module DataManager
 end # DataManager
 
 #==============================================================================
-# ¡ö RPG::BaseItem
+# â–  RPG::BaseItem
 #==============================================================================
 
 class RPG::BaseItem
@@ -95,7 +95,7 @@ class RPG::BaseItem
           @harmony_properties[:arange] = value
         when "SKILL"
           @harmony_properties[:srange] = value
-        when "MOVE"
+        when "ITEM"
           @harmony_properties[:irange] = value
         end
       end

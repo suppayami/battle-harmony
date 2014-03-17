@@ -1,7 +1,7 @@
 # Add things for Sprite_Character
 
 #==============================================================================
-# ¡ö Game_Enemy
+# â–  Game_Enemy
 #==============================================================================
 
 class Game_Enemy < Game_Battler
@@ -25,7 +25,7 @@ class Game_Enemy < Game_Battler
 end # Game_Enemy
 
 #==============================================================================
-# ¡ö Sprite_Character
+# â–  Sprite_Character
 #==============================================================================
 
 class Sprite_Character < Sprite_Base
@@ -34,11 +34,34 @@ class Sprite_Character < Sprite_Base
   # * Public Instance Variables
   #--------------------------------------------------------------------------
   attr_accessor :battler
+  
+  #--------------------------------------------------------------------------
+  # alias method: update
+  #--------------------------------------------------------------------------
+  alias beh_update update
+  def update
+    beh_update
+    setup_new_animation
+  end
+  
+  #--------------------------------------------------------------------------
+  # new method: setup_new_animation
+  #--------------------------------------------------------------------------
+  def setup_new_animation
+    return unless character.battler
+    battler = character.battler
+    if battler.animation_id > 0
+      animation = $data_animations[battler.animation_id]
+      mirror = battler.animation_mirror
+      start_animation(animation, mirror)
+      battler.animation_id = 0
+    end
+  end
     
 end # Sprite_Character
 
 #==============================================================================
-# ¡ö Game_Character
+# â–  Game_Character
 #==============================================================================
 
 class Game_Character < Game_CharacterBase
@@ -51,7 +74,7 @@ class Game_Character < Game_CharacterBase
 end # Game_Character
 
 #==============================================================================
-# ¡ö Game_CharacterBattler
+# â–  Game_CharacterBattler
 #==============================================================================
 
 class Game_CharacterBattler < Game_Character

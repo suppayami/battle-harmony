@@ -1,3 +1,5 @@
+$imported ||= {}
+
 module HARMONY
   module VISUAL
     PANEL_COLORS = { # Start.
@@ -23,6 +25,8 @@ module HARMONY
     PARTY_START_REGION = 30
     DEFAULT_BATTLE_MEMBERS = 4
     BATTLE_START_CAMERA = true
+    
+    DEFAULT_MAX_ACTOR = 4
     
     DEBUG_ASTAR = false
   end # ENGINE
@@ -53,6 +57,11 @@ module Vocab
   def self.tbs_wait
     # Actor command Wait
     "Wait"
+  end
+  
+  def self.tbs_attack
+    # Actor command Attack
+    "Attack"
   end
   
 end # Vocab

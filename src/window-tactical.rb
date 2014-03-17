@@ -1,5 +1,5 @@
 #==============================================================================
-# ¡ö Window_PartyBattlers
+# â–  Window_PartyBattlers
 #==============================================================================
 
 class Window_PartyBattlers < Window_Selectable
@@ -236,7 +236,7 @@ class Window_PartyBattlers < Window_Selectable
 end # Window_PartyBattlers
 
 #==============================================================================
-# ¡ö Window_TacticalCommand
+# â–  Window_TacticalCommand
 #==============================================================================
 
 class Window_TacticalCommand < Window_Command
@@ -273,6 +273,20 @@ class Window_TacticalCommand < Window_Command
   end
   
   #--------------------------------------------------------------------------
+  # fight_index
+  #--------------------------------------------------------------------------
+  def fight_index
+    1
+  end
+  
+  #--------------------------------------------------------------------------
+  # select_fight
+  #--------------------------------------------------------------------------
+  def select_fight
+    select(fight_index)
+  end
+  
+  #--------------------------------------------------------------------------
   # enable_fight?
   #--------------------------------------------------------------------------
   def enable_fight?
@@ -290,7 +304,7 @@ class Window_TacticalCommand < Window_Command
 end # Window_TacticalCommand
 
 #==============================================================================
-# ¡ö Window_ActorCommandTBS
+# â–  Window_ActorCommandTBS
 #==============================================================================
 
 class Window_ActorCommandTBS < Window_ActorCommand
@@ -301,7 +315,7 @@ class Window_ActorCommandTBS < Window_ActorCommand
   def make_command_list
     return unless @actor
     add_move_command
-#~     add_attack_command
+    add_attack_command
 #~     add_skill_commands
 #~     add_item_command
 #~     add_guard_command
@@ -313,6 +327,13 @@ class Window_ActorCommandTBS < Window_ActorCommand
   #--------------------------------------------------------------------------
   def add_move_command
     add_command(Vocab.tbs_move, :move, movable?)
+  end
+    
+  #--------------------------------------------------------------------------
+  # add_attack_command
+  #--------------------------------------------------------------------------
+  def add_attack_command
+    add_command(Vocab.tbs_attack, :attack, @actor.attack_usable? && actable?)
   end
   
   #--------------------------------------------------------------------------
@@ -329,10 +350,17 @@ class Window_ActorCommandTBS < Window_ActorCommand
     !@actor.moved? && @actor.movable?
   end
   
+  #--------------------------------------------------------------------------
+  # actable?
+  #--------------------------------------------------------------------------
+  def actable?
+    !@actor.acted? && @actor.movable?
+  end
+  
 end # Window_ActorCommandTBS
 
 #==============================================================================
-# ¡ö Window_StatusTBS
+# â–  Window_StatusTBS
 #==============================================================================
 
 class Window_StatusTBS < Window_Selectable
